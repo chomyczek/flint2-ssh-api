@@ -13,5 +13,30 @@ on **GL.iNet FLINT2 (GL-MT6000)** routers via SSH.
 
 ## Requirements
 
-- Python 3.14+
+- Python 3.13+
 - GL.iNet FLINT2 router with SSH enabled
+
+## Starting server
+
+Install dependencies
+```shell
+pip install uv
+uv sync --extra dev
+```
+
+Copy env file
+```shell
+cp .env.example .env
+```
+
+Start server
+```shell
+uvicorn app.main:app --reload
+```
+
+## UnitTests
+
+Run unit tests with pytest
+```shell
+pytest tests/ -v
+```
