@@ -2,9 +2,10 @@ import logging
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+from fastapi.responses import RedirectResponse
 
-from app.config import settings
 from app.api.v1.devices import router as devices_router
+from app.config import settings
 
 logging.basicConfig(level=settings.log_level.upper())
 logger = logging.getLogger(__name__)
@@ -23,6 +24,11 @@ app = FastAPI(
     debug=settings.debug,
     lifespan=lifespan,
 )
+
+
+@app.get("/", include_in_schema=False)
+async def root():
+    return RedirectResponse(url="/docs")
 
 
 @app.get("/health")
