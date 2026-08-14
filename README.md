@@ -5,11 +5,11 @@ on **GL.iNet FLINT2 (GL-MT6000)** routers via SSH.
 
 ## Features
 
-- Check if a device is online (connected to Wi-Fi) by IP address
-- Persistent SSH connection pool — no reconnect overhead per request
-- TTL-based response cache — reduces router load
-- Input validation, structured error responses
-- Docker-ready
+- [TODO] Check if a device is online (connected to Wi-Fi) by IP address and by name
+- [TODO] Persistent SSH connection pool — no reconnect overhead per request
+- [TODO] TTL-based response cache — reduces router load
+- [TODO] Input validation, structured error responses
+- [TODO] Docker-ready
 
 ## Requirements
 
