@@ -6,6 +6,7 @@ dependencies = [
     "fastapi>=0.111",
     "uvicorn[standard]>=0.30",
     "pydantic-settings>=2.2",
+    "asyncssh>=2.24",
 ]
 
 [project.optional-dependencies]
