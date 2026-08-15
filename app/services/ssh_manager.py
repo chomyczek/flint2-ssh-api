@@ -4,6 +4,7 @@ import logging
 import asyncssh
 
 from app.config import settings
+from app.models.ssh_response import SSHResponse
 
 
 class SSHManager:
@@ -25,12 +26,12 @@ class SSHManager:
             return
         self.logger.info("SSH connection established")
 
-    async def run_command(self, command: str) -> str:
+    async def run_command(self, command: str) -> SSHResponse:
         async with self._lock:
             if await self._ensure_connected():
                 result = await asyncio.wait_for(self._connection.run(command), timeout=settings.ssh_command_timeout)
-                return result.stdout.strip()
-            return ""
+                return SSHResponse(True, result.stdout.strip())
+            return SSHResponse(False, "")
 
     def is_connected(self) -> bool:
         return self._connection is not None and not self._connection.is_closed()
