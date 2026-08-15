@@ -17,4 +17,6 @@ class Settings(BaseSettings):
     router_ssh_password: str
     ssh_command_timeout: int = 5
     ssh_keepalive_interval: int = 5
+
+
 settings = Settings()

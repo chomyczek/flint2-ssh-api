@@ -42,7 +42,6 @@ async def health():
 
 app.include_router(devices_router, prefix="/api/v1")
 
-
 if __name__ == "__main__":
     if not settings.debug:
         logger.info("Application without DEBUG flag should be run with 'uvicorn app.main:app' command")
