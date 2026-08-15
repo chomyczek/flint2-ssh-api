@@ -11,10 +11,10 @@ class Settings(BaseSettings):
     log_level: str = "INFO"
 
     # SSH
-    router_host: str
-    router_ssh_port: int
-    router_ssh_username: str
-    router_ssh_password: str
+    router_host: str = "192.168.8.1"
+    router_ssh_port: int = 22
+    router_ssh_username: str = "root"
+    router_ssh_password: str = "your_password_here"
     ssh_command_timeout: int = 5
     ssh_keepalive_interval: int = 5
 
