@@ -63,7 +63,7 @@ async def test_run_command_triggers_connect_when_disconnected(manager):
         output = await manager.run_command("ip neigh show 192.168.0.0")
 
     assert output.success is True
-    assert output.response == "REACHABLE"
+    assert output.output == "REACHABLE"
     assert manager.is_connected() is True
 
 
@@ -124,7 +124,7 @@ async def test_run_command_returns_failure_when_cannot_connect(manager):
         output = await manager.run_command("any command")
 
     assert output.success is False
-    assert output.response == ""
+    assert output.output == ""
 
 
 async def test_disconnect_closes_connection(connected_manager):
