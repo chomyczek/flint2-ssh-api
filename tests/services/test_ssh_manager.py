@@ -2,6 +2,7 @@ import asyncio
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
+from asyncssh import HostKeyNotVerifiable
 
 from app.services.ssh_manager import SSHManager
 from tests.conftest import TEST_IP
@@ -42,10 +43,11 @@ async def test_is_connected_true_when_connection_is_open(manager):
     assert manager.is_connected() is True
 
 
-async def test_connect_handles_timeout_gracefully(manager):
+@pytest.mark.parametrize("exception", [TimeoutError, HostKeyNotVerifiable])
+async def test_connect_handles_exception_gracefully(manager, exception):
     with patch(
             "app.services.ssh_manager.asyncssh.connect",
-            side_effect=TimeoutError,
+            side_effect=exception(str(exception)),
     ):
         await manager.connect()
 

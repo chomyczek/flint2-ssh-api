@@ -2,6 +2,7 @@ import asyncio
 import logging
 
 import asyncssh
+from asyncssh import HostKeyNotVerifiable
 
 from app.config import settings
 from app.models.ssh_response import SSHResponse
@@ -21,8 +22,9 @@ class SSHManager:
                                                       username=settings.router_ssh_username,
                                                       password=settings.router_ssh_password,
                                                       keepalive_interval=settings.ssh_keepalive_interval)
-        except TimeoutError:
+        except (TimeoutError, HostKeyNotVerifiable) as e:
             self.logger.error("Failed to connect to router")
+            self.logger.debug(f"Exception: {e}")
             return
         self.logger.info("SSH connection established")
 
