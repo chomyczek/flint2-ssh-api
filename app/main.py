@@ -6,6 +6,7 @@ from fastapi.responses import RedirectResponse
 
 from app.api.v1.devices import router as devices_router
 from app.config import settings
+from app.services.cache_service import get_stats
 from app.services.ssh_manager import ssh_manager
 
 logging.basicConfig(level=settings.log_level.upper())
@@ -36,8 +37,13 @@ async def root():
 
 @app.get("/health")
 async def health():
-    return {"status": "ok", "version": settings.app_version, "router_connected": ssh_manager.is_connected(),
-            "SSH_reconnects": ssh_manager.reconnect_count, "router_host": settings.router_host}
+    return {
+        "status": "ok", "version": settings.app_version,
+        "router_connected": ssh_manager.is_connected(),
+        "SSH_reconnects": ssh_manager.reconnect_count,
+        "router_host": settings.router_host,
+        "cache": get_stats()
+    }
 
 
 app.include_router(devices_router, prefix="/api/v1")
@@ -49,7 +55,7 @@ if __name__ == "__main__":
 
     import uvicorn
     from pathlib import Path
-    
+
     app_dir = Path(__file__).parent
 
     uvicorn.run("app.main:app", reload=True, reload_dirs=[str(app_dir)])
