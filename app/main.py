@@ -46,6 +46,10 @@ if __name__ == "__main__":
     if not settings.debug:
         logger.info("Application without DEBUG flag should be run with 'uvicorn app.main:app' command")
         exit(0)
-    import uvicorn
 
-    uvicorn.run("app.main:app", host="0.0.0.0", port=8000, reload=True)
+    import uvicorn
+    from pathlib import Path
+    
+    app_dir = Path(__file__).parent
+
+    uvicorn.run("app.main:app", reload=True, reload_dirs=[str(app_dir)])

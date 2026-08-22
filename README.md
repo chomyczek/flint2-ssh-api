@@ -24,14 +24,14 @@ pip install uv
 uv sync --extra dev
 ```
 
-Copy env file
+Copy env file and complete them with your data 
 ```shell
 cp .env.example .env
 ```
 
 Start server
 ```shell
-uvicorn app.main:app --reload
+uvicorn app.main:app --reload --reload-dir ./app
 ```
 
 ## UnitTests
