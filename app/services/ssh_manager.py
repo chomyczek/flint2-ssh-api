@@ -32,8 +32,8 @@ class SSHManager:
         async with self._lock:
             if await self._ensure_connected():
                 result = await asyncio.wait_for(self._connection.run(command), timeout=settings.ssh_command_timeout)
-                return SSHResponse(True, result.stdout.strip())
-            return SSHResponse(False, "")
+                return SSHResponse(True, result.stdout.strip(), result.exit_status)
+            return SSHResponse(False, "", -1)
 
     def is_connected(self) -> bool:
         return self._connection is not None and not self._connection.is_closed()

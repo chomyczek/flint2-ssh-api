@@ -1,7 +1,11 @@
+from dataclasses import dataclass
+
+
+@dataclass
 class SSHResponse:
-    def __init__(self, success: bool, response: str):
-        self.success = success
-        self.response = response
+    success: bool
+    output: str
+    exit_code: int
 
     def __str__(self):
-        return str(self.response)
+        return str(self.output)
