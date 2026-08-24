@@ -3,6 +3,7 @@ import logging
 from datetime import datetime
 
 from app.models.device import DeviceStatusResponse
+from app.services.cache_service import cached
 from app.services.ssh_manager import ssh_manager
 
 ONLINE_STATES = {"REACHABLE", "DELAY", "PROBE", "PERMANENT", "NOARP"}
@@ -10,6 +11,7 @@ STALE_STATES = {"STALE", "INCOMPLETE"}
 logger = logging.getLogger(__name__)
 
 
+@cached("device_status")
 async def get_device_status_by_ip(ip: str) -> DeviceStatusResponse:
     """
     Checks if device is online by querying the router's ARP neighbour table.

@@ -18,5 +18,8 @@ class Settings(BaseSettings):
     ssh_command_timeout: int = 5
     ssh_keepalive_interval: int = 5
 
+    # Cache
+    cache_ttl_seconds: int = 30
+
 
 settings = Settings()

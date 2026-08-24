@@ -1,9 +1,9 @@
 from datetime import datetime
 
-from pydantic import BaseModel
+from app.models.cachable_response import CachableResponse
 
 
-class DeviceStatusResponse(BaseModel):
+class DeviceStatusResponse(CachableResponse):
     ip: str
     online: bool
     state: str| None
