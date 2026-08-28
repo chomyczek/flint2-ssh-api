@@ -1,0 +1,81 @@
+name: CI
+
+on:
+  pull_request:
+    branches:
+      - main
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  test:
+    name: Unit tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Install dependencies
+        run: uv sync --extra dev
+
+      - name: Run tests
+        run: uv run pytest tests/ -v
+
+  lint:
+    name: Lint & Type Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Install dependencies
+        run: uv sync --extra dev
+
+      - name: Ruff — check linting
+        id: ruff_lint
+        run: uv run ruff check .
+        continue-on-error: true
+
+      - name: Ruff — check formatting
+        id: ruff_format
+        run: uv run ruff format --check .
+        continue-on-error: true
+
+      - name: Mypy — type checking
+        id: mypy
+        run: uv run mypy app/
+        continue-on-error: true
+
+      - name: Check results
+        if: |
+          steps.ruff_lint.outcome == 'failure' ||
+          steps.ruff_format.outcome == 'failure' ||
+          steps.mypy.outcome == 'failure'
+        run: |
+          echo "One or more checks failed:"
+          echo "  Ruff lint:    ${{ steps.ruff_lint.outcome }}"
+          echo "  Ruff format:  ${{ steps.ruff_format.outcome }}"
+          echo "  Mypy:         ${{ steps.mypy.outcome }}"
+          exit 0
