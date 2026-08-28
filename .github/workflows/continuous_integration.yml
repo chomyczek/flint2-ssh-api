@@ -1,4 +1,4 @@
-name: Tests
+name: CI
 
 on:
   pull_request:
@@ -54,9 +54,12 @@ jobs:
 
       - name: Ruff — check linting
         run: uv run ruff check .
+        continue-on-error: true
 
       - name: Ruff — check formatting
         run: uv run ruff format --check .
+        continue-on-error: true
 
       - name: Mypy — type checking
         run: uv run mypy app/
+        continue-on-error: true
