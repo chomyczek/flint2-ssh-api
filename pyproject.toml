@@ -15,7 +15,57 @@ dev = [
     "pytest>=8.0",
     "pytest-asyncio>=0.23",
     "httpx>=0.27",
+    "ruff>=0.16",
+    "mypy>=2.3",
 ]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
+
+[tool.ruff]
+target-version = "py313"
+line-length = 120
+
+[tool.ruff.lint]
+select = [
+    "E",      # pycodestyle - indentation, spaces, blank lines
+    "F",      # pyflakes - unused imports, undefined variables
+    "I",      # isort - import sorting
+    "D",      # pydocstyle - docstrings
+    "ANN",    # flake8-annotations - parameter and return value types
+    "N",      # pep8-naming - naming conventions
+    "UP",     # pyupgrade - modern Python syntax
+    "B",      # flake8-bugbear - common bugs and bad practices
+    "SIM",    # flake8-simplify - code simplifications
+]
+
+ignore = [
+    "D100",   # missing docstring in module
+    "D104",   # missing docstring in package
+    "D107",   # missing docstring in __init__
+    "ANN101", # type for `self`
+    "ANN102", # type for `cls`
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = ["D", "ANN"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.isort]
+known-first-party = ["app"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+docstring-code-format = true
+
+[tool.mypy]
+python_version = "3.13"
+strict = false
+warn_return_any = true
+warn_unused_ignores = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
