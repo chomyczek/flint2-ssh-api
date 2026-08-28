@@ -9,19 +9,22 @@ from app.models.ssh_response import SSHResponse
 
 
 class SSHManager:
-    def __init__(self):
+    def __init__(self) -> None:
         self.logger = logging.getLogger(__name__)
         self._connection: asyncssh.SSHClientConnection | None = None
         self._lock = asyncio.Lock()
         self.reconnect_count = 0
 
-    async def connect(self):
+    async def connect(self) -> None:
         self.logger.info(f"Connecting to router at {settings.router_host}..")
         try:
-            self._connection = await asyncssh.connect(host=settings.router_host, port=settings.router_ssh_port,
-                                                      username=settings.router_ssh_username,
-                                                      password=settings.router_ssh_password,
-                                                      keepalive_interval=settings.ssh_keepalive_interval)
+            self._connection = await asyncssh.connect(
+                host=settings.router_host,
+                port=settings.router_ssh_port,
+                username=settings.router_ssh_username,
+                password=settings.router_ssh_password,
+                keepalive_interval=settings.ssh_keepalive_interval,
+            )
         except (TimeoutError, HostKeyNotVerifiable) as e:
             self.logger.error("Failed to connect to router")
             self.logger.debug(f"Exception: {e}")
@@ -46,7 +49,7 @@ class SSHManager:
             return self.is_connected()
         return True
 
-    async def disconnect(self):
+    async def disconnect(self) -> None:
         if self._connection:
             self._connection.close()
             await self._connection.wait_closed()

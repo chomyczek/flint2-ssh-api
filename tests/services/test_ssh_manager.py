@@ -46,8 +46,8 @@ async def test_is_connected_true_when_connection_is_open(manager):
 @pytest.mark.parametrize("exception", [TimeoutError, HostKeyNotVerifiable])
 async def test_connect_handles_exception_gracefully(manager, exception):
     with patch(
-            "app.services.ssh_manager.asyncssh.connect",
-            side_effect=exception(str(exception)),
+        "app.services.ssh_manager.asyncssh.connect",
+        side_effect=exception(str(exception)),
     ):
         await manager.connect()
 
@@ -121,8 +121,8 @@ async def test_reconnect_count_increments_on_each_reconnect(manager):
 
 async def test_run_command_returns_failure_when_cannot_connect(manager):
     with patch(
-            "app.services.ssh_manager.asyncssh.connect",
-            side_effect=TimeoutError,
+        "app.services.ssh_manager.asyncssh.connect",
+        side_effect=TimeoutError,
     ):
         output = await manager.run_command("any command")
 

@@ -9,6 +9,6 @@ router = APIRouter(prefix="/devices", tags=["devices"])
 
 
 @router.get("/status", response_model=DeviceStatusResponse)
-async def get_status(ip:str = Query(description="IPv4 address of the device to check")):
+async def get_status(ip: str = Query(description="IPv4 address of the device to check")):
     validate_ip(ip)
     return await get_device_status_by_ip(ip)

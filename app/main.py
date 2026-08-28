@@ -38,11 +38,12 @@ async def root():
 @app.get("/health")
 async def health():
     return {
-        "status": "ok", "version": settings.app_version,
+        "status": "ok",
+        "version": settings.app_version,
         "router_connected": ssh_manager.is_connected(),
         "SSH_reconnects": ssh_manager.reconnect_count,
         "router_host": settings.router_host,
-        "cache": get_stats()
+        "cache": get_stats(),
     }
 
 
@@ -53,8 +54,9 @@ if __name__ == "__main__":
         logger.info("Application without DEBUG flag should be run with 'uvicorn app.main:app' command")
         exit(0)
 
-    import uvicorn
     from pathlib import Path
+
+    import uvicorn
 
     app_dir = Path(__file__).parent
 

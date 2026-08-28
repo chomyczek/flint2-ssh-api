@@ -7,5 +7,5 @@ class SSHResponse:
     output: str
     exit_code: int
 
-    def __str__(self):
+    def __str__(self) -> str:
         return str(self.output)

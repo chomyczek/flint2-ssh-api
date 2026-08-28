@@ -1,7 +1,7 @@
 import functools
 import logging
 import threading
-from typing import Callable
+from collections.abc import Callable
 
 from cachetools import TTLCache, keys
 
@@ -15,15 +15,12 @@ _lock = threading.Lock()
 
 
 def make_key(prefix: str, *args) -> tuple:
-    """
-    Generate a key used for caching data
-    """
+    """Generate a key used for caching data."""
     return keys.hashkey(prefix, *args)
 
 
 def cached(key_prefix: str) -> Callable:
-    """
-    A decorator for caching async functions. It uses the built-in cachetools mechanism with threading.Lock.
+    """A decorator for caching async functions. It uses the built-in cachetools mechanism with threading.Lock.
 
     Important: The function must return a CachableResponse object.
 
@@ -56,13 +53,11 @@ def cached(key_prefix: str) -> Callable:
 
 
 def get_stats() -> dict:
-    """
-    Returns a dictionary with the statistics of the caching class instance
-    """
+    """Returns a dictionary with the statistics of the caching class instance."""
     with _lock:
         return {
             "cached_keys": len(_cache),
             "maxsize": _cache.maxsize,
             "ttl_seconds": _cache.ttl,
-            "currsize": _cache.currsize
+            "currsize": _cache.currsize,
         }
