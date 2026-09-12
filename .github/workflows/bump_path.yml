@@ -1,0 +1,48 @@
+name: Bump patch version on merge
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  bump:
+    name: Bump patch version in pyproject.toml
+    runs-on: ubuntu-latest
+    if: "!contains(github.event.head_commit.message, '[skip bump]')"
+
+    steps:
+      - name: Generate token from GitHub App
+        id: app-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Configure Git
+        run: |
+          git config user.name  "version-bumper[bot]"
+          git config user.email "version-bumper[bot]@users.noreply.github.com"
+
+      - name: Bump patch version
+        run: uv version --bump patch
+
+      - name: Commit & push
+        run: |
+          git add pyproject.toml uv.lock
+          git diff --staged --quiet && echo "Nothing to commit" && exit 0
+          git commit -m "bump version to $(uv version) [skip bump]"
+          git push
