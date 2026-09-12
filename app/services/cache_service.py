@@ -14,8 +14,16 @@ _cache = TTLCache(maxsize=256, ttl=settings.cache_ttl_seconds)
 _lock = threading.Lock()
 
 
-def make_key(prefix: str, *args) -> tuple:
-    """Generate a key used for caching data."""
+def make_key(prefix: str, *args: object) -> tuple[object, ...]:
+    """Generate a key used for caching data.
+
+    Args:
+        prefix: Namespace prefix for the cached value.
+        *args: Arguments identifying the cache value
+
+    Returns: Hashable cache key.
+    """
+
     return keys.hashkey(prefix, *args)
 
 
@@ -31,7 +39,7 @@ def cached(key_prefix: str) -> Callable:
 
     def decorator(func: Callable) -> Callable:
         @functools.wraps(func)
-        async def wrapper(*args, **kwargs) -> CachableResponse:
+        async def wrapper(*args: object, **kwargs: object) -> CachableResponse:
             key = make_key(key_prefix, *args, *kwargs)
             with _lock:
                 cached_value = _cache.get(key)
@@ -54,6 +62,7 @@ def cached(key_prefix: str) -> Callable:
 
 def get_stats() -> dict:
     """Returns a dictionary with the statistics of the caching class instance."""
+
     with _lock:
         return {
             "cached_keys": len(_cache),

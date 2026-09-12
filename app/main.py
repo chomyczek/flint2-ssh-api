@@ -1,4 +1,5 @@
 import logging
+from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
@@ -14,7 +15,14 @@ logger = logging.getLogger(__name__)
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(app: FastAPI) -> AsyncIterator[None]:
+    """Manage application startup and shutdown resources.
+
+    Args:
+        app: FastApi application instance.
+
+    Yields: Control while the application is running.
+    """
     logger.info(f"Starting {settings.app_name} v{settings.app_version}")
     await ssh_manager.connect()
     yield
@@ -31,12 +39,20 @@ app = FastAPI(
 
 
 @app.get("/", include_in_schema=False)
-async def root():
+async def root() -> RedirectResponse:
+    """Redirect root endpoint to the API documentation.
+
+    Returns: Redirect response pointing to the Swagger UI
+    """
     return RedirectResponse(url="/docs")
 
 
 @app.get("/health")
-async def health():
+async def health() -> dict[str, object]:
+    """Return the current application health status.
+
+    Returns: Application , SSH connection, and cache status details.
+    """
     return {
         "status": "ok",
         "version": settings.app_version,

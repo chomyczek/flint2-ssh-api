@@ -9,6 +9,8 @@ from app.models.ssh_response import SSHResponse
 
 
 class SSHManager:
+    """Manage a persistent SSH connection to the router."""
+
     def __init__(self) -> None:
         self.logger = logging.getLogger(__name__)
         self._connection: asyncssh.SSHClientConnection | None = None
@@ -16,6 +18,8 @@ class SSHManager:
         self.reconnect_count = 0
 
     async def connect(self) -> None:
+        """Establish an SSH connection to the router."""
+
         self.logger.info(f"Connecting to router at {settings.router_host}..")
         try:
             self._connection = await asyncssh.connect(
@@ -32,6 +36,14 @@ class SSHManager:
         self.logger.info("SSH connection established")
 
     async def run_command(self, command: str) -> SSHResponse:
+        """Run a command on the router through SSH.
+
+        Args:
+            command: Shell command to execute.
+
+        Returns: Result of the command.
+        """
+
         async with self._lock:
             if await self._ensure_connected():
                 result = await asyncio.wait_for(self._connection.run(command), timeout=settings.ssh_command_timeout)
@@ -39,9 +51,14 @@ class SSHManager:
             return SSHResponse(False, "", -1)
 
     def is_connected(self) -> bool:
+        """Check whether an active SSH connection exists.
+
+        Returns: True when SSH connection is active, False otherwise.
+        """
+
         return self._connection is not None and not self._connection.is_closed()
 
-    async def _ensure_connected(self):
+    async def _ensure_connected(self) -> bool:
         if not self.is_connected():
             self.logger.warning("SSH connection lost, reconnecting..")
             self.reconnect_count += 1
@@ -50,6 +67,8 @@ class SSHManager:
         return True
 
     async def disconnect(self) -> None:
+        """Close the Active SSH connection, if exists."""
+
         if self._connection:
             self._connection.close()
             await self._connection.wait_closed()

@@ -15,7 +15,13 @@ logger = logging.getLogger(__name__)
 async def get_device_status_by_ip(ip: str) -> DeviceStatusResponse:
     """Checks if device is online by querying the router's ARP neighbour table.
     If state is in STALE_STATES, falls back to a ping check.
+
+    Args:
+        ip: IPv4 address of the device to check.
+
+    Returns: Device connectivity status.
     """
+
     command = f"ip -json neigh show {ip}"
     logger.debug(f"Running command: {command}")
     online = False
