@@ -1,3 +1,5 @@
+from typing import Annotated
+
 from fastapi import APIRouter
 from fastapi.params import Query
 
@@ -9,7 +11,9 @@ router = APIRouter(prefix="/devices", tags=["devices"])
 
 
 @router.get("/status", response_model=DeviceStatusResponse)
-async def get_status(ip: str = Query(description="IPv4 address of the device to check")) -> DeviceStatusResponse:
+async def get_status(
+    ip: Annotated[str, Query(description="IPv4 address of the device to check")],
+) -> DeviceStatusResponse:
     """Return the connectivity status for a device.
 
     Args:

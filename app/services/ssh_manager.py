@@ -43,9 +43,10 @@ class SSHManager:
         Returns: Result of the command.
         """
         async with self._lock:
-            if await self._ensure_connected():
+            if await self._ensure_connected() and self._connection is not None:
                 result = await asyncio.wait_for(self._connection.run(command), timeout=settings.ssh_command_timeout)
-                return SSHResponse(True, result.stdout.strip(), result.exit_status)
+                exit_status = result.exit_status if result.exit_status is not None else -1
+                return SSHResponse(True, str(result.stdout).strip(), exit_status)
             return SSHResponse(False, "", -1)
 
     def is_connected(self) -> bool:
