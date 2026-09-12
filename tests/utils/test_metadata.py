@@ -12,8 +12,8 @@ def test_get_app_metadata_returns_package_metadata() -> None:
     }.__getitem__
 
     with patch(
-            "app.utils.metadata.metadata",
-            return_value=package_metadata,
+        "app.utils.metadata.metadata",
+        return_value=package_metadata,
     ):
         result = get_app_metadata()
 
@@ -23,8 +23,8 @@ def test_get_app_metadata_returns_package_metadata() -> None:
 
 def test_get_app_metadata_returns_fallback_when_package_is_not_installed() -> None:
     with patch(
-            "app.utils.metadata.metadata",
-            side_effect=PackageNotFoundError,
+        "app.utils.metadata.metadata",
+        side_effect=PackageNotFoundError,
     ):
         result = get_app_metadata()
 
