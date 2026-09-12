@@ -9,9 +9,12 @@ from app.api.v1.devices import router as devices_router
 from app.config import settings
 from app.services.cache_service import get_stats
 from app.services.ssh_manager import ssh_manager
+from app.utils.metadata import get_app_metadata
 
 logging.basicConfig(level=settings.log_level.upper())
 logger = logging.getLogger(__name__)
+
+_meta = get_app_metadata()
 
 
 @asynccontextmanager
@@ -23,7 +26,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 
     Yields: Control while the application is running.
     """
-    logger.info(f"Starting {settings.app_name} v{settings.app_version}")
+    logger.info(f"Starting {_meta.name} v{_meta.version}")
     await ssh_manager.connect()
     yield
     logger.info("Shutting down..")
@@ -31,8 +34,8 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 
 
 app = FastAPI(
-    title=settings.app_name,
-    version=settings.app_version,
+    title=_meta.name,
+    version=_meta.version,
     debug=settings.debug,
     lifespan=lifespan,
 )
@@ -55,7 +58,7 @@ async def health() -> dict[str, object]:
     """
     return {
         "status": "ok",
-        "version": settings.app_version,
+        "version": _meta.version,
         "router_connected": ssh_manager.is_connected(),
         "SSH_reconnects": ssh_manager.reconnect_count,
         "router_host": settings.router_host,
