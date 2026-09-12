@@ -3,9 +3,8 @@ from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
-    """
-    Application configuration loaded for environment variables.
-    """
+    """Application configuration loaded for environment variables."""
+
     model_config = ConfigDict(env_file=".env", env_file_encoding="utf-8")
 
     app_name: str = "FLINT2 SSH API"

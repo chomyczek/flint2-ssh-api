@@ -19,7 +19,6 @@ class SSHManager:
 
     async def connect(self) -> None:
         """Establish an SSH connection to the router."""
-
         self.logger.info(f"Connecting to router at {settings.router_host}..")
         try:
             self._connection = await asyncssh.connect(
@@ -43,7 +42,6 @@ class SSHManager:
 
         Returns: Result of the command.
         """
-
         async with self._lock:
             if await self._ensure_connected():
                 result = await asyncio.wait_for(self._connection.run(command), timeout=settings.ssh_command_timeout)
@@ -55,7 +53,6 @@ class SSHManager:
 
         Returns: True when SSH connection is active, False otherwise.
         """
-
         return self._connection is not None and not self._connection.is_closed()
 
     async def _ensure_connected(self) -> bool:
@@ -68,7 +65,6 @@ class SSHManager:
 
     async def disconnect(self) -> None:
         """Close the Active SSH connection, if exists."""
-
         if self._connection:
             self._connection.close()
             await self._connection.wait_closed()

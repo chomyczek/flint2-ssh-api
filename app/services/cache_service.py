@@ -23,7 +23,6 @@ def make_key(prefix: str, *args: object) -> tuple[object, ...]:
 
     Returns: Hashable cache key.
     """
-
     return keys.hashkey(prefix, *args)
 
 
@@ -62,7 +61,6 @@ def cached(key_prefix: str) -> Callable:
 
 def get_stats() -> dict:
     """Returns a dictionary with the statistics of the caching class instance."""
-
     with _lock:
         return {
             "cached_keys": len(_cache),

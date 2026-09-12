@@ -11,7 +11,6 @@ def validate_ip(ip: str) -> str:
 
     Returns: Valid IPv4 address.
     """
-
     try:
         ipaddress.IPv4Address(ip)
     except ValueError as e:

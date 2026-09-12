@@ -10,9 +10,8 @@ class SSHResponse:
     exit_code: int
 
     def __str__(self) -> str:
-        """ Return the command output as string.
+        """Return the command output as string.
 
         Returns: Command standard output.
         """
-
         return str(self.output)
