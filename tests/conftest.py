@@ -1,6 +1,6 @@
 import pytest
 
-from app.services.cache_service import _lock, _cache
+from app.services.cache_service import _cache, _lock
 
 TEST_IP = "203.0.113.42"
 TEST_MAC = "aa:bb:cc:dd:ee:ff"

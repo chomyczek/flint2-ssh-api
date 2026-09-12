@@ -78,4 +78,4 @@ jobs:
           echo "  Ruff lint:    ${{ steps.ruff_lint.outcome }}"
           echo "  Ruff format:  ${{ steps.ruff_format.outcome }}"
           echo "  Mypy:         ${{ steps.mypy.outcome }}"
-          exit 0
+          exit 1

@@ -9,19 +9,25 @@ from app.models.ssh_response import SSHResponse
 
 
 class SSHManager:
-    def __init__(self):
+    """Manage a persistent SSH connection to the router."""
+
+    def __init__(self) -> None:
         self.logger = logging.getLogger(__name__)
         self._connection: asyncssh.SSHClientConnection | None = None
         self._lock = asyncio.Lock()
         self.reconnect_count = 0
 
-    async def connect(self):
+    async def connect(self) -> None:
+        """Establish an SSH connection to the router."""
         self.logger.info(f"Connecting to router at {settings.router_host}..")
         try:
-            self._connection = await asyncssh.connect(host=settings.router_host, port=settings.router_ssh_port,
-                                                      username=settings.router_ssh_username,
-                                                      password=settings.router_ssh_password,
-                                                      keepalive_interval=settings.ssh_keepalive_interval)
+            self._connection = await asyncssh.connect(
+                host=settings.router_host,
+                port=settings.router_ssh_port,
+                username=settings.router_ssh_username,
+                password=settings.router_ssh_password,
+                keepalive_interval=settings.ssh_keepalive_interval,
+            )
         except (TimeoutError, HostKeyNotVerifiable) as e:
             self.logger.error("Failed to connect to router")
             self.logger.debug(f"Exception: {e}")
@@ -29,16 +35,28 @@ class SSHManager:
         self.logger.info("SSH connection established")
 
     async def run_command(self, command: str) -> SSHResponse:
+        """Run a command on the router through SSH.
+
+        Args:
+            command: Shell command to execute.
+
+        Returns: Result of the command.
+        """
         async with self._lock:
-            if await self._ensure_connected():
+            if await self._ensure_connected() and self._connection is not None:
                 result = await asyncio.wait_for(self._connection.run(command), timeout=settings.ssh_command_timeout)
-                return SSHResponse(True, result.stdout.strip(), result.exit_status)
+                exit_status = result.exit_status if result.exit_status is not None else -1
+                return SSHResponse(True, str(result.stdout).strip(), exit_status)
             return SSHResponse(False, "", -1)
 
     def is_connected(self) -> bool:
+        """Check whether an active SSH connection exists.
+
+        Returns: True when SSH connection is active, False otherwise.
+        """
         return self._connection is not None and not self._connection.is_closed()
 
-    async def _ensure_connected(self):
+    async def _ensure_connected(self) -> bool:
         if not self.is_connected():
             self.logger.warning("SSH connection lost, reconnecting..")
             self.reconnect_count += 1
@@ -46,7 +64,8 @@ class SSHManager:
             return self.is_connected()
         return True
 
-    async def disconnect(self):
+    async def disconnect(self) -> None:
+        """Close the Active SSH connection, if exists."""
         if self._connection:
             self._connection.close()
             await self._connection.wait_closed()

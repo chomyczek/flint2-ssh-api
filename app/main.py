@@ -1,4 +1,5 @@
 import logging
+from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
@@ -14,7 +15,14 @@ logger = logging.getLogger(__name__)
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(app: FastAPI) -> AsyncIterator[None]:
+    """Manage application startup and shutdown resources.
+
+    Args:
+        app: FastApi application instance.
+
+    Yields: Control while the application is running.
+    """
     logger.info(f"Starting {settings.app_name} v{settings.app_version}")
     await ssh_manager.connect()
     yield
@@ -31,18 +39,27 @@ app = FastAPI(
 
 
 @app.get("/", include_in_schema=False)
-async def root():
+async def root() -> RedirectResponse:
+    """Redirect root endpoint to the API documentation.
+
+    Returns: Redirect response pointing to the Swagger UI
+    """
     return RedirectResponse(url="/docs")
 
 
 @app.get("/health")
-async def health():
+async def health() -> dict[str, object]:
+    """Return the current application health status.
+
+    Returns: Application , SSH connection, and cache status details.
+    """
     return {
-        "status": "ok", "version": settings.app_version,
+        "status": "ok",
+        "version": settings.app_version,
         "router_connected": ssh_manager.is_connected(),
         "SSH_reconnects": ssh_manager.reconnect_count,
         "router_host": settings.router_host,
-        "cache": get_stats()
+        "cache": get_stats(),
     }
 
 
@@ -53,8 +70,9 @@ if __name__ == "__main__":
         logger.info("Application without DEBUG flag should be run with 'uvicorn app.main:app' command")
         exit(0)
 
-    import uvicorn
     from pathlib import Path
+
+    import uvicorn
 
     app_dir = Path(__file__).parent
 

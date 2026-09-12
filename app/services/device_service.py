@@ -13,9 +13,14 @@ logger = logging.getLogger(__name__)
 
 @cached("device_status")
 async def get_device_status_by_ip(ip: str) -> DeviceStatusResponse:
-    """
-    Checks if device is online by querying the router's ARP neighbour table.
+    """Checks if device is online by querying the router's ARP neighbour table.
+
     If state is in STALE_STATES, falls back to a ping check.
+
+    Args:
+        ip: IPv4 address of the device to check.
+
+    Returns: Device connectivity status.
     """
     command = f"ip -json neigh show {ip}"
     logger.debug(f"Running command: {command}")
@@ -35,9 +40,7 @@ async def get_device_status_by_ip(ip: str) -> DeviceStatusResponse:
 
 
 async def _ping(ip: str) -> bool:
-    """
-    Runs a single ping from the router to the target IP and return true if reachable.
-    """
+    """Runs a single ping from the router to the target IP and return true if reachable."""
     command = f"ping -c 1 -W 1 {ip}"
     logger.debug(f"Running command: {command}")
 
@@ -49,9 +52,7 @@ async def _ping(ip: str) -> bool:
 
 
 def _parse_neigh_output(output: str, ip: str) -> tuple[str | None, str | None]:
-    """
-    Parse the output of an IPv4 neighbor command and return (state, mac) or (None, None) if device not found.
-    """
+    """Parse the output of an IPv4 neighbor command and return (state, mac) or (None, None) if device not found."""
     if not output:
         return None, None
     try:

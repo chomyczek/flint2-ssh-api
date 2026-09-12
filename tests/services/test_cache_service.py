@@ -1,7 +1,7 @@
 from unittest.mock import AsyncMock, patch
 
 from app.models.cachable_response import CachableResponse
-from app.services.cache_service import make_key, cached, _lock, _cache, get_stats
+from app.services.cache_service import _cache, _lock, cached, get_stats, make_key
 
 
 def test_make_key():
