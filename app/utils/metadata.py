@@ -6,10 +6,10 @@ _PACKAGE_NAME = "FLINT2-SSH-API"
 
 
 def get_app_metadata() -> Metadata:
-    """Read application name and version from package metadata.
+    """Read application name and version from installed package metadata.
 
     Returns:
-        Dictionary with 'name' and 'version' keys read from pyproject.toml.
+        Metadata object with values read from pyproject.toml.
     """
     try:
         meta = metadata(_PACKAGE_NAME)
