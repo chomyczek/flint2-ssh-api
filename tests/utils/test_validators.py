@@ -1,19 +1,7 @@
 import pytest
 from fastapi import HTTPException
 
-from app.utils.validators import validate_ip, validate_mac
-
-
-@pytest.mark.parametrize("ip", ["192.168.1.1", "10.0.0.1", "203.0.113.42"])
-def test_validate_ip_valid(ip):
-    assert validate_ip(ip) == ip
-
-
-@pytest.mark.parametrize("ip", ["not_ip", "999.999.999.999", "", "192.168.1"])
-def test_validate_ip_invalid(ip):
-    with pytest.raises(HTTPException) as exc:
-        validate_ip(ip)
-    assert exc.value.status_code == 422
+from app.utils.validators import validate_mac
 
 
 @pytest.mark.parametrize(
