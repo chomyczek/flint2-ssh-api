@@ -7,19 +7,20 @@ from asyncssh import HostKeyNotVerifiable
 from app.config import settings
 from app.models.ssh_response import SSHResponse
 
+logger = logging.getLogger(__name__)
+
 
 class SSHManager:
     """Manage a persistent SSH connection to the router."""
 
     def __init__(self) -> None:
-        self.logger = logging.getLogger(__name__)
         self._connection: asyncssh.SSHClientConnection | None = None
         self._lock = asyncio.Lock()
         self.reconnect_count = 0
 
     async def connect(self) -> None:
         """Establish an SSH connection to the router."""
-        self.logger.info(f"Connecting to router at {settings.router_host}..")
+        logger.info(f"Connecting to router at {settings.router_host}..")
         try:
             self._connection = await asyncssh.connect(
                 host=settings.router_host,
@@ -29,10 +30,10 @@ class SSHManager:
                 keepalive_interval=settings.ssh_keepalive_interval,
             )
         except (TimeoutError, HostKeyNotVerifiable) as e:
-            self.logger.error("Failed to connect to router")
-            self.logger.debug(f"Exception: {e}")
+            logger.error("Failed to connect to router")
+            logger.debug(f"Exception: {e}")
             return
-        self.logger.info("SSH connection established")
+        logger.info("SSH connection established")
 
     async def run_command(self, command: str) -> SSHResponse:
         """Run a command on the router through SSH.
@@ -58,7 +59,7 @@ class SSHManager:
 
     async def _ensure_connected(self) -> bool:
         if not self.is_connected():
-            self.logger.warning("SSH connection lost, reconnecting..")
+            logger.warning("SSH connection lost, reconnecting..")
             self.reconnect_count += 1
             await self.connect()
             return self.is_connected()
@@ -70,7 +71,7 @@ class SSHManager:
             self._connection.close()
             await self._connection.wait_closed()
             self._connection = None
-            self.logger.info("SSH connection closed")
+            logger.info("SSH connection closed")
 
 
 ssh_manager = SSHManager()
