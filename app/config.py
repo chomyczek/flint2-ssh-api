@@ -8,6 +8,7 @@ class Settings(BaseSettings):
 
     debug: bool = False
     log_level: str = "INFO"
+    log_isolation: bool = True
 
     # SSH
     router_host: str = "192.168.8.1"

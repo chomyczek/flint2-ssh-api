@@ -11,10 +11,20 @@ from app.services.cache_service import get_stats
 from app.services.ssh_manager import ssh_manager
 from app.utils.metadata import get_app_metadata
 
-logging.basicConfig(level=settings.log_level.upper())
 logger = logging.getLogger(__name__)
 
 _meta = get_app_metadata()
+
+
+def setup_logging() -> None:
+    """Configure logging settings for the application."""
+    uv_logger = logging.getLogger("uvicorn")
+    handler = uv_logger.handlers[0] if uv_logger.handlers else logging.StreamHandler()
+
+    root_logger = logging.getLogger(__package__) if settings.log_isolation else logging.getLogger()
+    root_logger.setLevel(settings.log_level.upper())
+    root_logger.handlers = [handler]
+    root_logger.propagate = False
 
 
 @asynccontextmanager
@@ -26,6 +36,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 
     Yields: Control while the application is running.
     """
+    setup_logging()
     logger.info(f"Starting {_meta.name} v{_meta.version}")
     await ssh_manager.connect()
     yield
