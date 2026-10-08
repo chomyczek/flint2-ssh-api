@@ -2,7 +2,7 @@ import asyncio
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from asyncssh import HostKeyNotVerifiable, Error, PermissionDenied
+from asyncssh import Error, HostKeyNotVerifiable, PermissionDenied
 
 from app.exceptions import RouterUnavailableError, SSHCommandError
 from app.services.ssh_manager import SSHManager
@@ -151,23 +151,30 @@ async def test_run_command_is_thread_safe_under_concurrent_calls(manager):
     assert call_count == 1
 
 
-@pytest.mark.parametrize("exception", [
-    TimeoutError,
-    HostKeyNotVerifiable,
-    PermissionDenied,
-    Error,
-])
+@pytest.mark.parametrize(
+    "exception",
+    [
+        TimeoutError,
+        HostKeyNotVerifiable,
+        PermissionDenied,
+        Error,
+    ],
+)
 async def test_connect_raises_router_unavailable_on_ssh_errors(manager, exception):
-    with patch("app.services.ssh_manager.asyncssh.connect", side_effect=exception(-1, str(exception))):
-        with pytest.raises(RouterUnavailableError):
-            await manager.connect()
+    with (
+        patch("app.services.ssh_manager.asyncssh.connect", side_effect=exception(-1, str(exception))),
+        pytest.raises(RouterUnavailableError),
+    ):
+        await manager.connect()
     assert manager._connection is None
 
 
 async def test_run_command_raises_router_unavailable_when_reconnect_fails(manager):
-    with patch("app.services.ssh_manager.asyncssh.connect", side_effect=TimeoutError):
-        with pytest.raises(RouterUnavailableError):
-            await manager.run_command("any command")
+    with (
+        patch("app.services.ssh_manager.asyncssh.connect", side_effect=TimeoutError),
+        pytest.raises(RouterUnavailableError),
+    ):
+        await manager.run_command("any command")
 
 
 async def test_run_command_raises_ssh_command_error_on_timeout(connected_manager):

@@ -7,7 +7,7 @@ class RouterUnavailableError(Exception):
 
 
 class SSHCommandError(Exception):
-    """Raised when an SSH command returns an unexpected error"""
+    """Raised when an SSH command returns an unexpected error."""
 
     def __init__(self, command: str, detail: str) -> None:
         super().__init__(detail)

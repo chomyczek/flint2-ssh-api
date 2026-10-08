@@ -3,8 +3,7 @@ from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
-from fastapi.responses import RedirectResponse
-from starlette.responses import JSONResponse
+from fastapi.responses import JSONResponse, RedirectResponse
 
 from app.api.v1.devices import router as devices_router
 from app.config import settings
@@ -44,7 +43,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         await ssh_manager.connect()
     except RouterUnavailableError as e:
         logger.warning(f"Could not connect to router on startup: {e.detail}")
-        logger.warning(f"API will start but some endpoints will return 503 until router is reachable.")
+        logger.warning("API will start but some endpoints will return 503 until router is reachable.")
     yield
     logger.info("Shutting down..")
     await ssh_manager.disconnect()
@@ -59,7 +58,7 @@ app = FastAPI(
 
 
 @app.exception_handler(RouterUnavailableError)
-async def router_unavailable_exception_handler(request:Request, exc: RouterUnavailableError) ->JSONResponse:
+async def router_unavailable_exception_handler(request: Request, exc: RouterUnavailableError) -> JSONResponse:
     """Handle RouterUnavailableError exceptions and return 503 with generic message.
 
     Args:
@@ -73,7 +72,7 @@ async def router_unavailable_exception_handler(request:Request, exc: RouterUnava
 
 
 @app.exception_handler(SSHCommandError)
-async def ssh_command_exception_handler(request:Request, exc: SSHCommandError) -> JSONResponse:
+async def ssh_command_exception_handler(request: Request, exc: SSHCommandError) -> JSONResponse:
     """Handle SSHCommandError exceptions and return 503 with generic message.
 
     Args:
