@@ -2,16 +2,21 @@ import asyncio
 import logging
 
 import asyncssh
-from asyncssh import HostKeyNotVerifiable
+from asyncssh import Error, HostKeyNotVerifiable, PermissionDenied
 
 from app.config import settings
+from app.exceptions import RouterUnavailableError, SSHCommandError
 from app.models.ssh_response import SSHResponse
 
 logger = logging.getLogger(__name__)
 
 
 class SSHManager:
-    """Manage a persistent SSH connection to the router."""
+    """Manage a persistent SSH connection to the router.
+
+    Raises:
+        RouterUnavailableError: When connection cannot be established.
+    """
 
     def __init__(self) -> None:
         self._connection: asyncssh.SSHClientConnection | None = None
@@ -29,10 +34,19 @@ class SSHManager:
                 password=settings.router_ssh_password,
                 keepalive_interval=settings.ssh_keepalive_interval,
             )
-        except (TimeoutError, HostKeyNotVerifiable) as e:
-            logger.error("Failed to connect to router")
-            logger.debug(f"Exception: {e}")
-            return
+        except TimeoutError as e:
+            logger.error(f"SSH connection timed out: {e}")
+            raise RouterUnavailableError("Connection timed out") from e
+        except HostKeyNotVerifiable as e:
+            logger.error(f"SSH host key not verifiable: {e}")
+            raise RouterUnavailableError("Host key not verifiable") from e
+        except PermissionDenied as e:
+            logger.error(f"SSH permission denied: {e}")
+            raise RouterUnavailableError("Permission denied") from e
+        except Error as e:
+            logger.error(f"SSH error during connect: {e}")
+            raise RouterUnavailableError(f"SSH error: {e}") from e
+
         logger.info("SSH connection established")
 
     async def run_command(self, command: str) -> SSHResponse:
@@ -42,13 +56,29 @@ class SSHManager:
             command: Shell command to execute.
 
         Returns: Result of the command.
+
+        Raises:
+            RouterUnavailableError: When connection cannot be reached.
+            SSHCommandError: When command execution fails unexpectedly.
         """
         async with self._lock:
-            if await self._ensure_connected() and self._connection is not None:
-                result = await asyncio.wait_for(self._connection.run(command), timeout=settings.ssh_command_timeout)
-                exit_status = result.exit_status if result.exit_status is not None else -1
-                return SSHResponse(True, str(result.stdout).strip(), exit_status)
-            return SSHResponse(False, "", -1)
+            await self._ensure_connected()
+
+            connection = self._connection
+            if connection is None:
+                raise RouterUnavailableError("Connection to router is unavailable")
+
+            try:
+                result = await asyncio.wait_for(connection.run(command), timeout=settings.ssh_command_timeout)
+            except TimeoutError as e:
+                logger.error(f"SSH command timed out: {command!r}")
+                raise SSHCommandError(command, "Command timed out") from e
+            except Error as e:
+                logger.error(f"SSH error during command: {command!r}: {e}")
+                raise SSHCommandError(command, f"SSH error: {e}") from e
+
+            exit_status = result.exit_status if result.exit_status is not None else -1
+            return SSHResponse(str(result.stdout).strip(), exit_status)
 
     def is_connected(self) -> bool:
         """Check whether an active SSH connection exists.
@@ -57,13 +87,11 @@ class SSHManager:
         """
         return self._connection is not None and not self._connection.is_closed()
 
-    async def _ensure_connected(self) -> bool:
+    async def _ensure_connected(self) -> None:
         if not self.is_connected():
             logger.warning("SSH connection lost, reconnecting..")
             self.reconnect_count += 1
             await self.connect()
-            return self.is_connected()
-        return True
 
     async def disconnect(self) -> None:
         """Close the Active SSH connection, if exists."""
