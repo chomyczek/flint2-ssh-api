@@ -5,7 +5,6 @@ from dataclasses import dataclass
 class SSHResponse:
     """Result of a command executed over an SSH connection."""
 
-    success: bool
     output: str
     exit_code: int
 

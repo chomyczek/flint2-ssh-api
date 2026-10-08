@@ -2,11 +2,13 @@ import logging
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.responses import RedirectResponse
+from starlette.responses import JSONResponse
 
 from app.api.v1.devices import router as devices_router
 from app.config import settings
+from app.exceptions import RouterUnavailableError, SSHCommandError
 from app.services.cache_service import get_stats
 from app.services.ssh_manager import ssh_manager
 from app.utils.metadata import get_app_metadata
@@ -38,7 +40,11 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     """
     setup_logging()
     logger.info(f"Starting {_meta.name} v{_meta.version}")
-    await ssh_manager.connect()
+    try:
+        await ssh_manager.connect()
+    except RouterUnavailableError as e:
+        logger.warning(f"Could not connect to router on startup: {e.detail}")
+        logger.warning(f"API will start but some endpoints will return 503 until router is reachable.")
     yield
     logger.info("Shutting down..")
     await ssh_manager.disconnect()
@@ -50,6 +56,34 @@ app = FastAPI(
     debug=settings.debug,
     lifespan=lifespan,
 )
+
+
+@app.exception_handler(RouterUnavailableError)
+async def router_unavailable_exception_handler(request:Request, exc: RouterUnavailableError) ->JSONResponse:
+    """Handle RouterUnavailableError exceptions and return 503 with generic message.
+
+    Args:
+        request: The incoming HTTP request.
+        exc: The raised exception.
+
+    Returns: JSON response with error and 503 status code.
+    """
+    logger.debug(f"RouterUnavailableError on {request.method} {request.url.path}: {exc.detail}")
+    return JSONResponse(status_code=503, content={"detail": "Router is currently unavailable. Please try again later."})
+
+
+@app.exception_handler(SSHCommandError)
+async def ssh_command_exception_handler(request:Request, exc: SSHCommandError) -> JSONResponse:
+    """Handle SSHCommandError exceptions and return 503 with generic message.
+
+    Args:
+        request: The incoming HTTP request.
+        exc: The raised exception.
+
+    Returns: JSON response with error and 503 status code.
+    """
+    logger.debug(f"SSHCommandError on {request.method} {request.url.path}: {exc.detail}")
+    return JSONResponse(status_code=503, content={"detail": "Router is currently unavailable. Please try again later."})
 
 
 @app.get("/", include_in_schema=False)

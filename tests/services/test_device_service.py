@@ -68,7 +68,7 @@ def test_parse_ip_not_in_results():
 async def test_ping_returns_bool_on_exit_code_0(code, reachable):
     with patch(
         "app.services.device_service.ssh_manager.run_command",
-        new=AsyncMock(return_value=SSHResponse(success=True, output="", exit_code=code)),
+        new=AsyncMock(return_value=SSHResponse(output="", exit_code=code)),
     ):
         assert await _ping(TEST_IP) is reachable
 
@@ -76,7 +76,7 @@ async def test_ping_returns_bool_on_exit_code_0(code, reachable):
 async def test_status_reachable_is_online():
     with patch(
         "app.services.device_service.ssh_manager.run_command",
-        new=AsyncMock(return_value=SSHResponse(True, REACHABLE_RAW, 0)),
+        new=AsyncMock(return_value=SSHResponse(REACHABLE_RAW, 0)),
     ):
         result = await get_device_status_by_ip(TEST_IP)
 
@@ -89,7 +89,7 @@ async def test_status_reachable_is_online():
 async def test_status_failed_is_offline():
     with patch(
         "app.services.device_service.ssh_manager.run_command",
-        new=AsyncMock(return_value=SSHResponse(True, FAILED_RAW, 0)),
+        new=AsyncMock(return_value=SSHResponse(FAILED_RAW, 0)),
     ):
         result = await get_device_status_by_ip(TEST_IP)
 
@@ -100,7 +100,7 @@ async def test_status_failed_is_offline():
 async def test_status_not_in_arp_table_is_offline():
     with patch(
         "app.services.device_service.ssh_manager.run_command",
-        new=AsyncMock(return_value=SSHResponse(True, EMPTY_RAW, 0)),
+        new=AsyncMock(return_value=SSHResponse(EMPTY_RAW, 0)),
     ):
         result = await get_device_status_by_ip(TEST_IP)
 
@@ -121,7 +121,7 @@ async def test_online_state_based_on_status_and_ping(state_raw, ping_status, exp
     with (
         patch(
             "app.services.device_service.ssh_manager.run_command",
-            new=AsyncMock(return_value=SSHResponse(True, state_raw, 0)),
+            new=AsyncMock(return_value=SSHResponse(state_raw, 0)),
         ),
         patch("app.services.device_service._ping", new=AsyncMock(return_value=ping_status)),
     ):
@@ -136,7 +136,7 @@ async def test_ping_not_called_for_(state):
     with (
         patch(
             "app.services.device_service.ssh_manager.run_command",
-            new=AsyncMock(return_value=SSHResponse(True, state, 0)),
+            new=AsyncMock(return_value=SSHResponse(state, 0)),
         ),
         patch("app.services.device_service._ping", new=AsyncMock()) as mock_ping,
     ):
@@ -174,7 +174,7 @@ def test_parse_by_mac_invalid_input(raw):
 async def test_status_by_mac_online():
     with patch(
         "app.services.device_service.ssh_manager.run_command",
-        new=AsyncMock(return_value=SSHResponse(True, FULL_TABLE_RAW, 0)),
+        new=AsyncMock(return_value=SSHResponse(FULL_TABLE_RAW, 0)),
     ):
         result = await get_device_status_by_mac(TEST_MAC)
 
@@ -187,7 +187,7 @@ async def test_status_by_mac_online():
 async def test_status_by_mac_not_in_table_is_offline():
     with patch(
         "app.services.device_service.ssh_manager.run_command",
-        new=AsyncMock(return_value=SSHResponse(True, "[]", 0)),
+        new=AsyncMock(return_value=SSHResponse("[]", 0)),
     ):
         result = await get_device_status_by_mac(TEST_MAC)
 
@@ -200,7 +200,7 @@ async def test_status_by_mac_stale_ping_success():
     with (
         patch(
             "app.services.device_service.ssh_manager.run_command",
-            new=AsyncMock(return_value=SSHResponse(True, FULL_TABLE_STALE_RAW, 0)),
+            new=AsyncMock(return_value=SSHResponse(FULL_TABLE_STALE_RAW, 0)),
         ),
         patch("app.services.device_service._ping", new=AsyncMock(return_value=True)),
     ):
@@ -214,7 +214,7 @@ async def test_status_by_mac_stale_ping_fails():
     with (
         patch(
             "app.services.device_service.ssh_manager.run_command",
-            new=AsyncMock(return_value=SSHResponse(True, FULL_TABLE_STALE_RAW, 0)),
+            new=AsyncMock(return_value=SSHResponse(FULL_TABLE_STALE_RAW, 0)),
         ),
         patch("app.services.device_service._ping", new=AsyncMock(return_value=False)),
     ):
@@ -228,7 +228,7 @@ async def test_status_by_mac_stale_no_ip_is_offline():
 
     with patch(
         "app.services.device_service.ssh_manager.run_command",
-        new=AsyncMock(return_value=SSHResponse(True, no_ip_stale, 0)),
+        new=AsyncMock(return_value=SSHResponse(no_ip_stale, 0)),
     ):
         result = await get_device_status_by_mac(TEST_MAC)
 
@@ -238,7 +238,7 @@ async def test_status_by_mac_stale_no_ip_is_offline():
 async def test_ip_and_mac_cache_are_independent():
     with patch(
         "app.services.device_service.ssh_manager.run_command",
-        new=AsyncMock(return_value=SSHResponse(True, FULL_TABLE_RAW, 0)),
+        new=AsyncMock(return_value=SSHResponse(FULL_TABLE_RAW, 0)),
     ) as mock_cmd:
         resp1 = await get_device_status_by_ip(TEST_IP)
         resp2 = await get_device_status_by_mac(TEST_MAC)
